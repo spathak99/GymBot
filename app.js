@@ -157,16 +157,9 @@ var genders = ['Male', 'Female'];
             builder.Prompts.text(session, 'Please enter your height in feet and inches');
         },
         function (session, results) {
-            session.userData.height = results.response;
-            height =  results.response;        
-            inches = 12*Number(height.charAt(0));
-            var tempinches=Number(height.charAt(2));
-            if(height.charAt(3)!='\''){
-            tempinches = 10+Number(height.charAt(3).valueOf());
-        }
-            inches =  Number(inches+tempinches);
-    
-            console.log(inches);
+            var tempHeight = results.response.split(/[^0-9]+/g);
+            height = tempHeight[0]*12 + (+tempHeight[1] || 0);
+            console.log(height);
     
             builder.Prompts.text(session, 'Please enter your weight in pounds: ');
         },
