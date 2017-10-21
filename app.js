@@ -24,7 +24,6 @@ var ID;
 var weight;
 var height;
 var inches;
-var feet;
 var gender;
 var ActivityType;
 var goal;
@@ -32,8 +31,8 @@ var age;
 var light = 1.375;
 var moderate = 1.55;
 var active = 1.75;
-var BMR;
-var TDEE;
+var bmr;
+var tdee;
 // Setup Restify Server
 var server = restify.createServer();
 server.listen(process.env.port || process.env.PORT || 3978, function () {
@@ -114,9 +113,11 @@ bot.dialog('survey', [
         session.userData.name = results.response;
 
         name =  results.response;
+        
         builder.Prompts.text(session, 'Hi ' + session.userData.name + ', please enter your age:');
 
     },
+
 
     function (session, results) {
         session.userData.age = results.response;
@@ -185,16 +186,16 @@ bot.dialog('survey', [
 ]);
 
 function StoreUserData() {
+    
     var obj = {
-        weight: this.weight,
-        height: this.height,
-        feet: this.feet,
-        inches: this.inches,
-        gender: this.gender,
-        goal: this.goal,
-        age: this.age,
-        BMR: this.BMR,
-        TDEE: this.TDEE
+        weight: weight,
+        inches: inches,
+        height: height,
+        gender: gender,
+        goal: goal,
+        age: age,
+        bmr: bmr,
+        tdee: tdee
     }
     writeToDatabase("nonFacebookUsers/" + name, obj);
 }
