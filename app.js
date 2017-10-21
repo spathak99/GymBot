@@ -92,17 +92,18 @@ bot.dialog('survey', [
     },
     function (session, results) {
         session.userData.height = results.response;
-        height =  results.response;
+        height =  results.response;        
         inches = 12*height.charAt(0);
-        var tempinches=s.charAt(2);
+        var tempinches=height.charAt(2);
+        
         if(height.charAt(3)!='\'')
         tempinches = (tempinches*10)+height.charAt(3); 
         inches +=  tempinches;
-         builder.Prompts.text(session, 'Please enter your weight in pounds: ');
+        builder.Prompts.text(session, 'Please enter your weight in pounds: ');
     },
     function (session, results) {
         session.userData.weight = results.response;
-        weight =  results.response;
+        weight =  results.response.text;
         if(gender == genders[0]){
             bmr = 66 + (0.453592 * weight)*13.7 + (height * 2.54)*5 - (6.8 * age);
         }else{
