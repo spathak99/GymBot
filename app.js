@@ -45,7 +45,7 @@ var bot = new builder.UniversalBot(connector, function (session) {
     userStore.push(address);
 
     // end current dialog
-    setupDone = false;
+    session.userData.setupDone = false;
     session.endDialog('Welcome to My Fitness Bot');
 });
 
