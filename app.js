@@ -52,16 +52,18 @@ setInterval(function () {
     });
 }, 5000);
 
+var choices = ['Bulking', 'Lean Muscle', 'Losing Weight'];
+
 bot.dialog('survey', [
     function (session) {
         builder.Prompts.text(session, 'Hello! What\'s your name?');
     },
     function (session, results) {
         session.userData.name = results.response;
-        builder.Prompts.choice(session, 'Hi ' + results.response + ', What are your fitness goals?',['Bulking', 'Lean Muscle', 'Losing Weight']);
+        builder.Prompts.choice(session, 'Hi ' + results.response + ', What are your fitness goals?',choices);
     },
     function (session, results) {
-        session.userData.goals = results.response.text;
+        session.userData.goals = results.response.entity;
         builder.Prompts.text(session, 'Please enter your height in feet:');
     },
     function (session, results) {
@@ -72,6 +74,6 @@ bot.dialog('survey', [
         session.userData.weight = results.response;
         session.endDialog('Got it! ' + session.userData.name +
             ', your fitness goal is ' + session.userData.goals +
-            ', your height is,' + session.userData.height + ' feet and your weight is' + session.userData.weight) + ' pounds';
+            ', your height is ' + session.userData.height + ' feet and your weight is ' + session.userData.weight) + ' pounds';
     }
 ]);
