@@ -49,6 +49,8 @@ var bot = new builder.UniversalBot(connector, function (session) {
     session.endDialog('Welcome to My Fitness Bot');
 });
 
+bot.set('storage', new builder.MemoryBotStorage());
+
 setInterval(function() {
     var newAddresses = userStore.splice(0);
     newAddresses.forEach(function (address) {
