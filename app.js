@@ -88,28 +88,31 @@ bot.dialog('survey', [
     function (session, results) {
         session.userData.goals = results.response.entity;
         goal =  results.response.entity;
-        builder.Prompts.text(session, 'Please enter your height in feet and inches:');
+        builder.Prompts.text(session, 'Please enter your height in feet and inches as such(5\'7"):');
     },
     function (session, results) {
         session.userData.height = results.response;
         height =  results.response;
         inches = 12*height.charAt(0);
         var tempinches=s.charAt(2);
-        if(height.charAt(3)!='\'')
-        tempinches = (tempinches*10)+height.charAt(3); 
-        inches +=  tempinches;
+        if(height.charAt(3) == '1' || height.charAt(3) == '0'){
+            tempinches = (tempinches*10)+height.charAt(3); 
+            inches +=  tempinches;
+        }
+        
          builder.Prompts.text(session, 'Please enter your weight in pounds: ');
     },
+
     function (session, results) {
         session.userData.weight = results.response;
         weight =  results.response;
         if(gender == genders[0]){
-            bmr = 66 + (0.453592 * weight)*13.7 + (height * 2.54)*5 - (6.8 * age);
+            bmr = 66 + (0.453592 * weight)*13.7 + (inches * 2.54)*5 - (6.8 * age);
         }else{
-            bmr = 665 + (0.453592 * weight)*9.6 + (height * 2.54)*1.8- (4.7 * age);
+            bmr = 665 + (0.453592 * weight)*9.6 + (inches * 2.54)*1.8- (4.7 * age);
         }
         session.endDialog('Got it! ' + session.userData.name +
-            ', your Basal Metabolic rate is' + '___ ' + '. Therefore, your Total Daily Engery Expenditure is' 
+            ', your Basal Metabolic rate is' + BMR + '. Therefore, your Total Daily Energy Expenditure is' 
             + '___ ' + 'calories');
     }
 
