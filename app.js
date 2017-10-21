@@ -20,29 +20,8 @@ var provider = new firebase.auth.FacebookAuthProvider();
 var database = firebase.database();
 var setup = false;
 var loginWithFacebook = false;
-var ID;
-var restDay;
-var mon = 0;
-var tues = 1;
-var wed = 2;
-var thur = 3;
-var fri = 4;
-var sat = 5;
-var sun = 6;
-var routine= [[]];
-var weight;
-var height;
-var inches;
-var gender;
-var ActivityType;
-var goal;
-var age;
-var light = 1.375;
-var moderate = 1.55;
-var active = 1.75;
-var bmr;
-var tdee;
-var cal_goal;
+//restDay, height, sex, activityType, age, bmr, tdee, calGoal, goal
+var data = {};
 var BUTTONS = { listStyle: builder.ListStyle.button };
 // Setup Restify Server
 var server = restify.createServer();
@@ -68,8 +47,6 @@ var bot = new builder.UniversalBot(connector, function (session) {
 
      // end current dialog
     session.endDialog('Welcome to My Fitness Bot');
-    
- 
 });
 
 setInterval(function () {
@@ -98,10 +75,9 @@ setInterval(function () {
     });
 }, 5000);
 
-var choices = ['Bulking', 'Lean Muscle', 'Losing Weight'];
+var choices = ['Bulking', 'Lean', 'Weight Loss'];
 var activities = ['Light', 'Moderate', 'Active'];
 var days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
-var genders = ['Male', 'Female'];
 
     bot.dialog('survey', [
         function(session) {
@@ -125,162 +101,89 @@ var genders = ['Male', 'Female'];
             builder.Prompts.text(session, 'Hello! What\'s your name?');
         },
         function (session, results) {
-            session.userData.name = results.response;
-    
-            name =  results.response;
-            
+            name = results.response;
             builder.Prompts.text(session, 'Hi ' + session.userData.name + ', please enter your age:');
     
         },
     
     
         function (session, results) {
-            session.userData.age = results.response;
-            age = Number(results.response);
-            builder.Prompts.choice(session, 'Please enter your gender:',genders, BUTTONS);
+            data.age = +results.response;
+            builder.Prompts.choice(session, 'Please enter your sex:', 'Male|Female', BUTTONS);
         },
     
         function (session, results) {
-            session.userData.gender = results.response;
-            gender = results.response;
-            builder.Prompts.choice(session, 'Enter your estimated activity type',activities, BUTTONS);
+            sex = results.response;
+            builder.Prompts.choice(session, 'Enter your estimated activity type', activities, BUTTONS);
         },
         
         function (session, results) {
-            session.userData.ActivityType = results.response.entity;
-            ActivityType = results.response;
+            data.activityType = results.response.entity;
             builder.Prompts.choice(session, 'What are your fitness goals?',choices, BUTTONS);
         },
         function (session, results) {
-            session.userData.goals = results.response.entity;
-            goal =  results.response.entity;
-            builder.Prompts.text(session, 'Please enter your height in feet and inches');
+            data.goal = results.response.entity;
+            builder.Prompts.text(session, 'Please enter your height in feet and inches (ex: 6\'2")');
         },
         function (session, results) {
             var tempHeight = results.response.split(/[^0-9]+/g);
-            height = tempHeight[0]*12 + (+tempHeight[1] || 0);
-            console.log(height);
+            data.height = tempHeight[0]*12 + (+tempHeight[1] || 0);
     
             builder.Prompts.text(session, 'Please enter your weight in pounds: ');
         },
     
         function (session, results) {
-            session.userData.weight = results.response; 
-            weight =  Number(results.response);
-            console.log(weight);
-            if(gender == genders[0]){
-                bmr = 66 + (0.453592 * weight)*13.7 + (inches * 2.54)*5 - (6.8 * age);
-            }else{
-                bmr = 665 + (0.453592 * weight)*9.6 + (inches * 2.54)*1.8- (4.7 * age);
+            data.weight = +results.response;
+            if (sex == "Male") {
+                data.bmr = 66  + (0.453592 * data.weight) * 13.7 + (data.height * 2.54) * 5   - (6.8 * data.age);
+            } else {
+                data.bmr = 665 + (0.453592 * data.weight) * 9.6  + (data.height * 2.54) * 1.8 - (4.7 * data.age);
             }
             
 
-            bmr=Math.floor(bmr);
-            if(ActivityType==activities[0])
-            tdee = bmr*1.375;
-            else if (ActivityType==activities[1])
-            tdee= bmr*1.55;
-            else
-            tdee= bmr *1.725;
-            tdee=Math.floor(tdee);
+            data.bmr = Math.floor(data.bmr);
+            var multipliers = {
+                'Light': 1.375,
+                'Moderate': 1.55,
+                'Active': 1.725
+            };
+            data.tdee = Math.floor(data.bmr * multipliers[data.activityType]);
     
-            
-    
+            console.log(data);
+
             session.send('Got it! ' + session.userData.name +
-                ', your Basal Metabolic rate is ' + Number(bmr) + '. Therefore, your Total Daily Energy Expenditure is ' 
-                + tdee + ' calories');
-                if(goal==choices[0]){
-                    cal_goal = tdee + 750;
-                    session.send('Because you are trying to bulk up, your calorie goal should be '
-                + cal_goal + ' calories consumed per day.' );
-                }else if(goal == choices[1]){
-                    cal_goal = tdee - 150;
-                    session.send('Because you are trying to get lean, your calorie goal should be '
-                + cal_goal + ' calories consumed per day.' );
-                }else if(goal == choices[2]){
-                    cal_goal = tdee - 500;
-                    session.send('Because you are trying to lose weight, your calorie goal should be '
-                    + cal_goal + ' calories consumed per day.' );
-                }
-                session.send('Now, I will create a workout routine tailored just for you!');
-                
-                var adaptiveCardMessage = new builder.Message(session)
-                .addAttachment({
-                    contentType: "application/vnd.microsoft.card.adaptive",
-                    content: {
-                        type: "AdaptiveCard",
-                        text: "What day of the week would you like to be your rest day?",
-                           body: [
-                                {
-                                    type: "Input.ChoiceSet",
-                                    id: "Days",
-                                    style:"expanded",
-                                    choices: [
-                                        {
-                                            title: "Monday",
-                                            value: "0",
-                                        },
-                                        {
-                                            title: "Tuesday",
-                                            value: "1"
-                                        },
-                                        {
-                                            title: "Wednesday",
-                                            value: "2"
-                                        },
-                                        {
-                                            title: "Thursday",
-                                            value: "4"
-                                        },{
-                                            title: "Friday",
-                                            value: "4"
-                                        },{
-                                            title: "Saturday",
-                                            value: "5"
-                                        },{
-                                            title: "Sunday",
-                                            value: "6"
-                                        }
-                                    ]
-                                }
-                            ],"actions": [
-                                {
-                                    "type": "Action.Submit",
-                                    "title": "OK"
-                                }
-                            ]
-                    }
-                });
-                
-                //how do get user input
-                session.send(adaptiveCardMessage);
-                restDay =  session.message;
-                console.log('Rest day ' + JSON.stringify(restDay));
-                builder.Prompts.text(session, 'Which of the following equipment do you have access to?',bodybuilder._equipments);
-                //for (equipment of bodybuilder._equipment)
-                //bodybuilder.encodeData(["TRX", "Bands"], "equipment")
-               /// bodybuilder.getExercises(muscles, exTypes, equipment).then(function() {
-                    //do shit
-               // });
-        }  
+                ', your Basal Metabolic rate is ' + Number(data.bmr) + '. Therefore, your Total Daily Energy Expenditure is ' 
+                + data.tdee + ' calories');
+            
+            if(data.goal == 'Bulking') {
+                data.calGoal = data.tdee + 750;
+                session.send('Because you are trying to bulk up, your calorie goal should be '
+                    + data.calGoal + ' calories consumed per day.' );
+            }else if(data.goal == 'Lean'){
+                data.calGoal = data.tdee - 150;
+                session.send('Because you are trying to get lean, your calorie goal should be '
+                    + data.calGoal + ' calories consumed per day.' );
+            }else if(data.goal == 'Weight Loss'){
+                data.calGoal = data.tdee - 500;
+                session.send('Because you are trying to lose weight, your calorie goal should be '
+                    + data.calGoal + ' calories consumed per day.' );
+            }
+            session.send('Now, I will create a workout routine tailored just for you!');
+            
+            builder.Prompts.choice(session, 'Which day would you like to be your rest day?', days, BUTTONS)
+        },
+        
+        function (session, results) {
+            data.restDay = results.response;
+            builder.Prompts.text(session, 'Which of the following equipment do you have access to (or prefer)?', bodybuilder._equipments);
+        }
         //StoreUserData();
     ]);
-    
-
 
 function StoreUserData() {
    
     var obj = {
-        weight: weight,
-        inches: inches,
-        height: height,
-        gender: gender,
-        goal: goal,
-        age: age,
-        bmr: bmr,
-        tdee: tdee,
-        restDay: restDay,
-        calorie_goal: cal_goal
+        goal: goal
     }
     writeToDatabase("nonFacebookUsers/" + name, obj);
 }
@@ -297,4 +200,3 @@ var readFromDatabase = function(databasePath) {
 
         });
 }
-
