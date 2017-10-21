@@ -26,13 +26,18 @@ var height;
 var inches;
 var feet;
 var gender;
+var ActivityType;
 var goal;
 var age;
 var light = 1.375;
 var moderate = 1.55;
 var active = 1.75;
 var BMR;
+<<<<<<< HEAD
 var TDEE;
+=======
+var tdee;
+>>>>>>> 9d2d6f7efddf73617cc2b88d5998ce75a509c047
 // Setup Restify Server
 var server = restify.createServer();
 server.listen(process.env.port || process.env.PORT || 3978, function () {
@@ -85,6 +90,8 @@ setInterval(function () {
 }, 5000);
 
 var choices = ['Bulking', 'Lean Muscle', 'Losing Weight'];
+var activities = ['Light', 'Moderate', 'Active'];
+
 var genders = ['Male', 'Female'];
 bot.dialog('survey', [
     function(session) {
@@ -109,45 +116,76 @@ bot.dialog('survey', [
     },
     function (session, results) {
         session.userData.name = results.response;
+<<<<<<< HEAD
         name =  results.response;
         builder.Prompts.text(session, 'Please enter your age:');
+=======
+        name =  results.response.entity;
+        builder.Prompts.text(session, 'Hi ' + session.userData.name + ', please enter your age:');
+>>>>>>> 9d2d6f7efddf73617cc2b88d5998ce75a509c047
     },
 
     function (session, results) {
         session.userData.age = results.response;
-        age = results.response;
-        builder.Prompts.choice(session, 'Hi, please enter your gender:',genders);
+        age = Number(results.response);
+        builder.Prompts.choice(session, 'Please enter your gender:',genders);
+    },
+
+    function (session, results) {
+        session.userData.gender = results.response;
+        gender = results.response;
+        builder.Prompts.choice(session, 'Enter your estimated activy type',activities);
     },
     
     function (session, results) {
-        session.userData.gender = results.response.entity;
-        gender = results.response;
-        builder.Prompts.choice(session, 'Hi ' + session.userData.name + ', What are your fitness goals?',choices);
+        session.userData.ActivityType = results.response.entity;
+        ActivityType = results.response;
+        builder.Prompts.choice(session, 'What are your fitness goals?',choices);
     },
     function (session, results) {
         session.userData.goals = results.response.entity;
         goal =  results.response.entity;
-        builder.Prompts.text(session, 'Please enter your height in feet and inches:');
+        builder.Prompts.text(session, 'Please enter your height in feet and inches as such(5\'7"):');
     },
     function (session, results) {
         session.userData.height = results.response;
-        height =  results.response;
+        height =  results.response;        
+        inches = 12*Number(height.charAt(0));
+        var tempinches=Number(height.charAt(2));
+        if(height.charAt(3)!='\''){
+        tempinches = 10+Number(height.charAt(3).valueOf());
+    }
+        inches =  Number(inches+tempinches);
+
+        console.log(inches);
         builder.Prompts.text(session, 'Please enter your weight in pounds: ');
     },
+
     function (session, results) {
-        session.userData.weight = results.response;
-        weight =  results.response;
+        session.userData.weight = results.response; 
+        weight =  Number(results.response);
+        console.log(weight);
         if(gender == genders[0]){
-            bmr = 66 + (0.453592 * weight)*13.7 + (height * 2.54)*5 - (6.8 * age);
+            bmr = 66 + (0.453592 * weight)*13.7 + (inches * 2.54)*5 - (6.8 * age);
         }else{
-            bmr = 665 + (0.453592 * weight)*9.6 + (height * 2.54)*1.8- (4.7 * age);
+            bmr = 665 + (0.453592 * weight)*9.6 + (inches * 2.54)*1.8- (4.7 * age);
         }
+        
+
+        bmr=Math.floor(bmr);
+        if(ActivityType==activities[0])
+        tdee = bmr*1.375;
+        else if (ActivityType==activities[1])
+        tdee= bmr*1.55;
+        else
+        tdee= bmr *1.725;
+        tdee=Math.floor(tdee);
 
         StoreUserData();
 
         session.endDialog('Got it! ' + session.userData.name +
-            ', your Basal Metabolic rate is' + '___ ' + '. Therefore, your Total Daily Engery Expenditure is' 
-            + '___ ' + 'calories');
+            ', your Basal Metabolic rate is ' + Number(bmr) + '. Therefore, your Total Daily Engery Expenditure is ' 
+            + tdee + ' calories');
     }
 
 
