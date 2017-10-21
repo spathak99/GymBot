@@ -1,6 +1,6 @@
 var restify = require('restify');
 var builder = require('botbuilder');
-
+var bodybuilder = require('./libs/bodybuilder');
 
 var firebase = require("firebase");
 
@@ -180,7 +180,7 @@ var genders = ['Male', 'Female'];
                 bmr = 665 + (0.453592 * weight)*9.6 + (inches * 2.54)*1.8- (4.7 * age);
             }
             
-    
+
             bmr=Math.floor(bmr);
             if(ActivityType==activities[0])
             tdee = bmr*1.375;
@@ -209,18 +209,17 @@ var genders = ['Male', 'Female'];
                     + cal_goal + ' calories consumed per day.' );
                 }
                 session.send('Now, I will create a workout routine tailored just for you!');
-                session.send('What day of the week would you like to be your rest day?');
                 var adaptiveCardMessage = new builder.Message(session)
                 .addAttachment({
                     contentType: "application/vnd.microsoft.card.adaptive",
                     content: {
                         type: "AdaptiveCard",
-                        speak: "What day of the week would you like to be your rest day?",
+                        text: "What day of the week would you like to be your rest day?",
                            body: [
                                 {
                                     "type": "Input.ChoiceSet",
                                     "id": "Days",
-                                    "style":"compact",
+                                    "style":"expanded",
                                     "choices": [
                                         {
                                             "title": "Monday",
@@ -249,15 +248,24 @@ var genders = ['Male', 'Female'];
                                         }
                                     ]
                                 }
+                            ],"actions": [
+                                {
+                                    "type": "Action.Submit",
+                                    "title": "OK"
+                                }
                             ]
                     }
                 });
-            
+                
                 session.send(adaptiveCardMessage);
-                //builder.Prompts.text(session, 'Which of the following equipment do you have access to?',equipments);
-                
-               
-                
+                restDay =  session.message.value;
+                console.log('Rest day' + restDay);
+                builder.Prompts.text(session, 'Which of the following equipment do you have access to?',bodybuilder._equipments);
+                //for (equipment of bodybuilder._equipment)
+                //bodybuilder.encodeData(["TRX", "Bands"], "equipment")
+               /// bodybuilder.getExercises(muscles, exTypes, equipment).then(function() {
+                    //do shit
+               // });
         }  
         //StoreUserData();
     ]);
