@@ -151,7 +151,7 @@ var days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunda
     
             console.log(data);
 
-            session.send('Got it! ' + session.userData.name +
+            session.send('Got it! ' + data.name +
                 ', your Basal Metabolic rate is ' + Number(data.bmr) + '. Therefore, your Total Daily Energy Expenditure is ' 
                 + data.tdee + ' calories');
             
@@ -181,11 +181,7 @@ var days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunda
     ]);
 
 function StoreUserData() {
-   
-    var obj = {
-        goal: goal
-    }
-    writeToDatabase("nonFacebookUsers/" + name, obj);
+    writeToDatabase("nonFacebookUsers/" + name, data);
 }
 
 var writeToDatabase = function(databasePath, objectToWrite) {
