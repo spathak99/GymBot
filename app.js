@@ -209,6 +209,7 @@ var genders = ['Male', 'Female'];
                     + cal_goal + ' calories consumed per day.' );
                 }
                 session.send('Now, I will create a workout routine tailored just for you!');
+                
                 var adaptiveCardMessage = new builder.Message(session)
                 .addAttachment({
                     contentType: "application/vnd.microsoft.card.adaptive",
@@ -217,34 +218,34 @@ var genders = ['Male', 'Female'];
                         text: "What day of the week would you like to be your rest day?",
                            body: [
                                 {
-                                    "type": "Input.ChoiceSet",
-                                    "id": "Days",
-                                    "style":"expanded",
-                                    "choices": [
+                                    type: "Input.ChoiceSet",
+                                    id: "Days",
+                                    style:"expanded",
+                                    choices: [
                                         {
-                                            "title": "Monday",
-                                            "value": "0",
+                                            title: "Monday",
+                                            value: "0",
                                         },
                                         {
-                                            "title": "Tuesday",
-                                            "value": "1"
+                                            title: "Tuesday",
+                                            value: "1"
                                         },
                                         {
-                                            "title": "Wednesday",
-                                            "value": "2"
+                                            title: "Wednesday",
+                                            value: "2"
                                         },
                                         {
-                                            "title": "Thursday",
-                                            "value": "4"
+                                            title: "Thursday",
+                                            value: "4"
                                         },{
-                                            "title": "Friday",
-                                            "value": "4"
+                                            title: "Friday",
+                                            value: "4"
                                         },{
-                                            "title": "Saturday",
-                                            "value": "5"
+                                            title: "Saturday",
+                                            value: "5"
                                         },{
-                                            "title": "Sunday",
-                                            "value": "6"
+                                            title: "Sunday",
+                                            value: "6"
                                         }
                                     ]
                                 }
@@ -257,9 +258,10 @@ var genders = ['Male', 'Female'];
                     }
                 });
                 
+                //how do get user input
                 session.send(adaptiveCardMessage);
-                restDay =  session.message.value;
-                console.log('Rest day' + restDay);
+                restDay =  session.message;
+                console.log('Rest day ' + JSON.stringify(restDay));
                 builder.Prompts.text(session, 'Which of the following equipment do you have access to?',bodybuilder._equipments);
                 //for (equipment of bodybuilder._equipment)
                 //bodybuilder.encodeData(["TRX", "Bands"], "equipment")
