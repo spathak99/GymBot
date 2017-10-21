@@ -80,33 +80,23 @@ var choices = ['Bulking', 'Lean', 'Weight Loss'];
 var activities = ['Light', 'Moderate', 'Active'];
 var days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 var setupDone = false;
-const days;
+const scheduleTemplate = [
+    [bodybuilder.MUSCLES[0 ],bodybuilder.MUSCLES[1 ],bodybuilder.MUSCLES[9 ],bodybuilder.MUSCLES[14]],
+    [bodybuilder.MUSCLES[2 ],bodybuilder.MUSCLES[3 ],bodybuilder.MUSCLES[4 ],bodybuilder.MUSCLES[12]],
+    [bodybuilder.MUSCLES[5 ],bodybuilder.MUSCLES[10],bodybuilder.MUSCLES[11],bodybuilder.MUSCLES[15]],
+    [bodybuilder.MUSCLES[6 ],bodybuilder.MUSCLES[7 ],bodybuilder.MUSCLES[8 ],bodybuilder.MUSCLES[16]],
+    [bodybuilder.MUSCLES[0 ],bodybuilder.MUSCLES[1 ],bodybuilder.MUSCLES[9 ],bodybuilder.MUSCLES[14]],
+    [bodybuilder.MUSCLES[2 ],bodybuilder.MUSCLES[3 ],bodybuilder.MUSCLES[4 ],bodybuilder.MUSCLES[12]]
+];
 bot.dialog('survey', [
     function(session, results) {
-        builder.Prompts.choice(session, 'Hi, would you like to sign in with facebook?', "yes|no", BUTTONS)
-    },
-    function (session, results) {
-        if((results.response + "").toUpperCase() == ("yes").toUpperCase()) {
-            //firebase.auth().signInWithRedirect(provider);
-            var msg = new builder.Message(session);
-            msg.attachments([
-                new builder.SigninCard(session)
-                    .button(
-                        "Sign in with facebook",
-                        "https://www.facebook.com/v2.10/dialog/oauth?client_id=1951046761818596&redirect_uri=https://www.facebook.com/connect/login_success.html"
-                    )
-            ]);
-            session.send(msg);
-        } else {
-            session.send("Okay, we'll continue without using facebook.");
-        }
         builder.Prompts.text(session, 'Hello! What\'s your name?');
     },
+
     function (session, results) {
         name = results.response;
         builder.Prompts.text(session, 'Hi ' + session.userData.name + ', please enter your age:');
     },
-
 
     function (session, results) {
         data.age = +results.response;
@@ -205,39 +195,51 @@ bot.use({
     botbuilder: function(session, next) {
         if (setupDone) {
             data.equipment = JSON.stringify(session.message.value.equipment.split(';'));
-            days= [[bodybuilder.MUSCLES[0],bodybuilder.MUSCLES[1],bodybuilder.MUSCLES[9],bodybuilder.MUSCLES[14]],
-                [bodybuilder.MUSCLES[2],bodybuilder.MUSCLES[3],bodybuilder.MUSCLES[4],bodybuilder.MUSCLES[12]],
-                [bodybuilder.MUSCLES[5],bodybuilder.MUSCLES[10],bodybuilder.MUSCLES[11],bodybuilder.MUSCLES[15]]
-                [bodybuilder.MUSCLES[6],bodybuilder.MUSCLES[7],bodybuilder.MUSCLES[8],bodybuilder.MUSCLES[16]]
-               [bodybuilder.MUSCLES[0],bodybuilder.MUSCLES[1],bodybuilder.MUSCLES[9],bodybuilder.MUSCLES[14]]
-               [bodybuilder.MUSCLES[2],bodybuilder.MUSCLES[3],bodybuilder.MUSCLES[4],bodybuilder.MUSCLES[12]]];
+            
+            var daysWithoutRestDay = days.slice(0);
+            daysWithoutRestDay.splice(days.indexOf(data.restDay), 1);
 
-              
-            //TODO: Calculate schedule with every day except for data.restDay using bodybuilder.MUSCLES
             //Write that to data.schedule
             data.setup = true;
-            StoreUserData().then(function() {
-                var adaptiveCardMessage = new builder.Message(session).addAttachment({
-                    contentType: "application/vnd.microsoft.card.adaptive",
-                    content: {
-                        type: "AdaptiveCard",
-                        body: [{
-                            "type": "Input.ChoiceSet",
-                            "id": "equipment",
-                            "style":"expanded",
-                            "isMultiSelect": true,
-                            "choices": bodybuilder.EQUIPMENT.map(e => {
-                                return {title: e, value: e}
-                            })
-                        }],"actions": [{
-                            "type": "Action.Submit",
-                            "title": "OK"
-                        }]
-                    }
-                });
-                //TODO: Show data.schedule in a nice fashion
-                //TODO: Tell user the keyword to start any workout is "Start my workout"
+            StoreUserData();
+            var columns = [{
+                type: "Column",
+                items: []
+            }];
+            daysWithoutRestDay.forEach((dayName) => {
+                columns[0].items.push({
+                    type: "TextBlock",
+                    text: dayName
+                })
             });
+            for (var i = 0; i < scheduleTemplate[0].length; i++) {
+                var newColumn = {
+                    type: "Column",
+                    items: []
+                };
+                for (var day of scheduleTemplate)
+                    newColumn.items.push({
+                        type: "TextBlock",
+                        text: day[i]
+                    });
+                columns.push(newColumn);
+            }
+            console.log(columns);
+            var adaptiveCardMessage = new builder.Message(session).addAttachment({
+                contentType: "application/vnd.microsoft.card.adaptive",
+                content: {
+                    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                    type: "AdaptiveCard",
+                    version: "1.0",
+                    body: [{
+                        "type": "ColumnSet",
+                        "columns": columns,
+                    }]
+                }
+            });
+            session.send(adaptiveCardMessage);
+            //TODO: Show data.schedule in a nice fashion
+            //TODO: Tell user the keyword to start any workout is "Start my workout"
         } else next();
     }
 });
