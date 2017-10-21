@@ -72,7 +72,7 @@ setInterval(function() {
             //TODO: begin other dialog
         }
     });
-}, 1000);
+}, 500);
 
 var choices = ['Bulking', 'Lean', 'Weight Loss'];
 var activities = ['Light', 'Moderate', 'Active'];
@@ -92,7 +92,7 @@ bot.dialog('survey', [
     },
 
     function (session, results) {
-        name = results.response;
+        data.name = results.response;
         builder.Prompts.text(session, 'Hi, ' + data.name + '! Please enter your age.');
     },
 
@@ -102,7 +102,7 @@ bot.dialog('survey', [
     },
 
     function (session, results) {
-        sex = results.response;
+        data.sex = results.response;
         builder.Prompts.choice(session, 'Enter your estimated activity type', activities, BUTTONS);
     },
     
@@ -123,7 +123,7 @@ bot.dialog('survey', [
 
     function (session, results, next) {
         data.weight = +results.response;
-        if (sex == "Male") {
+        if (data.sex == "Male") {
             data.bmr = 66  + (0.453592 * data.weight) * 13.7 + (data.height * 2.54) * 5   - (6.8 * data.age);
         } else {
             data.bmr = 665 + (0.453592 * data.weight) * 9.6  + (data.height * 2.54) * 1.8 - (4.7 * data.age);
@@ -137,8 +137,6 @@ bot.dialog('survey', [
             'Active': 1.725
         };
         data.tdee = Math.floor(data.bmr * multipliers[data.activityType]);
-
-        console.log(data);
 
         session.send('Got it! ' + data.name +
             ', your Basal Metabolic rate is ' + Number(data.bmr) + '. Therefore, your Total Daily Energy Expenditure is ' 
@@ -213,7 +211,8 @@ bot.use({
             for (var i = 0; i < scheduleTemplate[0].length; i++) {
                 var newColumn = {
                     type: "Column",
-                    items: []
+                    items: [],
+                    spacing: i ? "default" : "large"
                 };
                 for (var day of scheduleTemplate)
                     newColumn.items.push({
@@ -251,7 +250,7 @@ bot.dialog('workout', [
 ]);
 
 function StoreUserData() {
-    writeToDatabase("nonFacebookUsers/" + name, data);
+    writeToDatabase("nonFacebookUsers/" + encodeURIComponent(data.name), data);
     //TODO: Remember to just read and write the data variable. It has everything in it
 }
 
