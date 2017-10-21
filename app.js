@@ -19,8 +19,6 @@ var provider = new firebase.auth.FacebookAuthProvider();
 
 var database = firebase.database();
 var loginWithFacebook = false;
-//restDay, height, sex, activityType, age, bmr, tdee, calGoal, goal, equipment,day0,day1,day2,day3,day4,day5,day6
-var data = {};
 var BUTTONS = { listStyle: builder.ListStyle.button };
 // Setup Restify Server
 var server = restify.createServer();
@@ -40,11 +38,13 @@ server.post('/api/messages', connector.listen());
 var userStore = [];
 // Receive messages from the user and respond by echoing each message back (prefixed with 'You said:')
 var bot = new builder.UniversalBot(connector, function (session) {
-     // store user's address
-     var address = session.message.address;
-     userStore.push(address);
+    //restDay, height, sex, activityType, age, bmr, tdee, calGoal, goal, equipment,day0,day1,day2,day3,day4,day5,day6
+    //session.userData = {};
+    // store user's address
+    var address = session.message.address;
+    userStore.push(address);
 
-     // end current dialog
+    // end current dialog
     session.endDialog('Welcome to My Fitness Bot');
 });
 
@@ -59,7 +59,8 @@ setInterval(function() {
         delete newConversationAddress.conversation;
 
         // start survey dialog
-        if(!data.setup){
+        //TODO: Don't start this unless setup is false
+        if(true){
             bot.beginDialog(newConversationAddress, 'survey', null, function (err) {
                 if (err) {
                     // error ocurred while starting new conversation. Channel not supported?
@@ -92,68 +93,68 @@ bot.dialog('survey', [
     },
 
     function (session, results) {
-        data.name = results.response;
-        builder.Prompts.text(session, 'Hi, ' + data.name + '! Please enter your age.');
+        session.userData.name = results.response;
+        builder.Prompts.text(session, 'Hi, ' + session.userData.name + '! Please enter your age.');
     },
 
     function (session, results) {
-        data.age = +results.response;
+        session.userData.age = +results.response;
         builder.Prompts.choice(session, 'Please enter your sex:', 'Male|Female', BUTTONS);
     },
 
     function (session, results) {
-        data.sex = results.response;
+        session.userData.sex = results.response;
         builder.Prompts.choice(session, 'Enter your estimated activity type', activities, BUTTONS);
     },
     
     function (session, results) {
-        data.activityType = results.response.entity;
+        session.userData.activityType = results.response.entity;
         builder.Prompts.choice(session, 'What are your fitness goals?',choices, BUTTONS);
     },
     function (session, results) {
-        data.goal = results.response.entity;
+        session.userData.goal = results.response.entity;
         builder.Prompts.text(session, 'Please enter your height in feet and inches (ex: 6\'2")');
     },
     function (session, results) {
         var tempHeight = results.response.split(/[^0-9]+/g);
-        data.height = tempHeight[0]*12 + (+tempHeight[1] || 0);
+        session.userData.height = tempHeight[0]*12 + (+tempHeight[1] || 0);
 
         builder.Prompts.text(session, 'Please enter your weight in pounds: ');
     },
 
     function (session, results, next) {
-        data.weight = +results.response;
-        if (data.sex == "Male") {
-            data.bmr = 66  + (0.453592 * data.weight) * 13.7 + (data.height * 2.54) * 5   - (6.8 * data.age);
+        session.userData.weight = +results.response;
+        if (session.userData.sex == "Male") {
+            session.userData.bmr = 66  + (0.453592 * session.userData.weight) * 13.7 + (session.userData.height * 2.54) * 5   - (6.8 * session.userData.age);
         } else {
-            data.bmr = 665 + (0.453592 * data.weight) * 9.6  + (data.height * 2.54) * 1.8 - (4.7 * data.age);
+            session.userData.bmr = 665 + (0.453592 * session.userData.weight) * 9.6  + (session.userData.height * 2.54) * 1.8 - (4.7 * session.userData.age);
         }
         
 
-        data.bmr = Math.floor(data.bmr);
+        session.userData.bmr = Math.floor(session.userData.bmr);
         var multipliers = {
             'Light': 1.375,
             'Moderate': 1.55,
             'Active': 1.725
         };
-        data.tdee = Math.floor(data.bmr * multipliers[data.activityType]);
+        session.userData.tdee = Math.floor(session.userData.bmr * multipliers[session.userData.activityType]);
 
-        session.send('Got it! ' + data.name +
-            ', your Basal Metabolic rate is ' + Number(data.bmr) + '. Therefore, your Total Daily Energy Expenditure is ' 
-            + data.tdee + ' calories');
+        session.send('Got it! ' + session.userData.name +
+            ', your Basal Metabolic rate is ' + Number(session.userData.bmr) + '. Therefore, your Total Daily Energy Expenditure is ' 
+            + session.userData.tdee + ' calories');
         
-        if(data.goal == 'Bulking') {
-            data.calGoal = data.tdee + 750;
+        if(session.userData.goal == 'Bulking') {
+            session.userData.calGoal = session.userData.tdee + 750;
             session.send('Because you are trying to bulk up, your calorie goal should be '
-                + data.calGoal + ' calories consumed per day.' );
-        }else if(data.goal == 'Lean'){
-            data.calGoal = data.tdee - 150;
+                + session.userData.calGoal + ' calories consumed per day.' );
+        }else if(session.userData.goal == 'Lean'){
+            session.userData.calGoal = session.userData.tdee - 150;
             session.send('Because you are trying to get lean, your calorie goal should be '
-                + data.calGoal + ' calories consumed per day.' );
-        }else if(data.goal == 'Weight Loss'){
-            data.calGoal = data.tdee - 500;
+                + session.userData.calGoal + ' calories consumed per day.' );
+        }else if(session.userData.goal == 'Weight Loss'){
+            session.userData.calGoal = session.userData.tdee - 500;
             session.send('Because you are trying to lose weight, your calorie goal should be '
-                + data.calGoal + ' calories consumed per day.' );
+                + session.userData.calGoal + ' calories consumed per day.' );
         }
         session.send('Now, I will create a workout routine tailored just for you!');
         
@@ -161,7 +162,7 @@ bot.dialog('survey', [
     },
     
     function (session, results, next) {
-        data.restDay = results.response;
+        session.userData.restDay = results.response;
         builder.Prompts.text(session, 'Which of the following equipment do you have access to (or prefer)?', bodybuilder._equipments);
         var adaptiveCardMessage = new builder.Message(session).addAttachment({
             contentType: "application/vnd.microsoft.card.adaptive",
@@ -190,18 +191,19 @@ bot.dialog('survey', [
 bot.use({
     botbuilder: function(session, next) {
         if (setupDone) {
-            data.equipment = JSON.stringify(session.message.value.equipment.split(';'));
+            session.userData.equipment = JSON.stringify(session.message.value.equipment.split(';'));
 
             var daysWithoutRestDay = days.slice(0);
-            daysWithoutRestDay.splice(days.indexOf(data.restDay), 1);
+            daysWithoutRestDay.splice(days.indexOf(session.userData.restDay), 1);
 
-            //Write that to data.schedule
-            data.setup = true;
-            StoreUserData();
+            //Write that to session.userData.schedule
+            session.userData.setup = true;
+            StoreUserData(session);
             var columns = [{
                 type: "Column",
                 items: []
             }];
+            //TODO Calculate Correct Rest Day
             daysWithoutRestDay.forEach((dayName) => {
                 columns[0].items.push({
                     type: "TextBlock",
@@ -235,22 +237,23 @@ bot.use({
                 }
             });
             session.send(adaptiveCardMessage);
-            //TODO: Show data.schedule in a nice fashion
+            //TODO: Show session.userData.schedule in a nice fashion
             //TODO: Tell user the keyword to start any workout is "Start my workout"
+
         } else next();
     }
 });
 
 bot.dialog('workout', [
     //TODO: use bodybuilder.getExercises to get a list of 15 exercised for the given day
-    //Muscles is defined by data.schedule for this weekday
+    //Muscles is defined by session.userData.schedule for this weekday
     //ExTypes is defined by data entered during setup. You wouldnt powerlift trying to get lean
-    //Equipment is literally just data.equipment
+    //Equipment is literally just session.userData.equipment
     //The promise returned by this is a JSON object. Display it's contents in the Chat.
 ]);
 
-function StoreUserData() {
-    writeToDatabase("nonFacebookUsers/" + encodeURIComponent(data.name), data);
+function StoreUserData(session) {
+    writeToDatabase("nonFacebookUsers/" + encodeURIComponent(session.userData.name), session.userData);
     //TODO: Remember to just read and write the data variable. It has everything in it
 }
 
@@ -258,7 +261,7 @@ var writeToDatabase = function(databasePath, objectToWrite) {
     database.ref(databasePath).set(objectToWrite);
 }
 
-var readFromDatabase = function(databasePath) {
+var readFromDatabase = function(databasePath, session) {
     return database.ref(databasePath).once("value")
         .then(function(snapshot){
             
