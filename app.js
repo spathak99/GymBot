@@ -1,5 +1,26 @@
 var restify = require('restify');
 var builder = require('botbuilder');
+
+
+var firebase = require("firebase");
+
+src="https://www.gstatic.com/firebasejs/4.5.0/firebase.js"
+var config = {
+    apiKey: "AIzaSyCXqurV20q5-96THLY1Nf0ov3Si5jk63Ak",
+    authDomain: "gymbot-ece78.firebaseapp.com",
+    databaseURL: "https://gymbot-ece78.firebaseio.com",
+    projectId: "gymbot-ece78",
+    storageBucket: "gymbot-ece78.appspot.com",
+    messagingSenderId: "510403215335"
+  };
+firebase.initializeApp(config);
+var provider = new firebase.auth.FacebookAuthProvider();
+
+
+var database = firebase.database();
+
+var loginWithFacebook = false;
+var ID;
 var weight;
 var height;
 var inches;
@@ -11,6 +32,7 @@ var light = 1.375;
 var moderate = 1.55;
 var active = 1.75;
 var BMR;
+var TDEE;
 // Setup Restify Server
 var server = restify.createServer();
 server.listen(process.env.port || process.env.PORT || 3978, function () {
@@ -65,12 +87,29 @@ setInterval(function () {
 var choices = ['Bulking', 'Lean Muscle', 'Losing Weight'];
 var genders = ['Male', 'Female'];
 bot.dialog('survey', [
-    function (session) {
+    function(session) {
+        builder.Prompts.text(session, 'Hi, would you like to sign in with facebook?');
+    },
+    function (session, results) {
+        if((results.response + "").toUpperCase() == ("yes").toUpperCase()) {
+            //firebase.auth().signInWithRedirect(provider);
+            var msg = new builder.Message(session);
+            msg.attachments([
+                new builder.SigninCard(session)
+                    .button(
+                        "Sign in with facebook",
+                        "https://www.facebook.com/v2.10/dialog/oauth?client_id=1951046761818596&redirect_uri=https://www.facebook.com/connect/login_success.html"
+                    )
+            ]);
+            session.send(msg);
+        } else {
+            session.send("Okay, we'll continue without using facebook.");
+        }
         builder.Prompts.text(session, 'Hello! What\'s your name?');
     },
     function (session, results) {
         session.userData.name = results.response;
-        name =  results.response.entity;
+        name =  results.response;
         builder.Prompts.text(session, 'Please enter your age:');
     },
 
@@ -103,6 +142,9 @@ bot.dialog('survey', [
         }else{
             bmr = 665 + (0.453592 * weight)*9.6 + (height * 2.54)*1.8- (4.7 * age);
         }
+
+        StoreUserData();
+
         session.endDialog('Got it! ' + session.userData.name +
             ', your Basal Metabolic rate is' + '___ ' + '. Therefore, your Total Daily Engery Expenditure is' 
             + '___ ' + 'calories');
@@ -110,3 +152,31 @@ bot.dialog('survey', [
 
 
 ]);
+
+function StoreUserData() {
+    var obj = {
+        weight: this.weight,
+        height: this.height,
+        feet: this.feet,
+        inches: this.inches,
+        gender: this.gender,
+        goal: this.goal,
+        age: this.age,
+        BMR: this.BMR,
+        TDEE: this.TDEE
+    }
+    writeToDatabase("nonFacebookUsers/" + name, obj);
+}
+
+var writeToDatabase = function(databasePath, objectToWrite) {
+    database.ref(databasePath).set(objectToWrite);
+}
+
+var readFromDatabase = function(databasePath) {
+    return database.ref(databasePath).once("value")
+        .then(function(snapshot){
+            
+            return snapshot.val();
+
+        });
+}
