@@ -153,6 +153,7 @@ bot.dialog('survey', [
         inches =  Number(inches+tempinches);
 
         console.log(inches);
+
         builder.Prompts.text(session, 'Please enter your weight in pounds: ');
     },
 
