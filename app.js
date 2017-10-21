@@ -103,13 +103,15 @@ bot.dialog('survey', [
     function (session, results) {
         session.userData.height = results.response;
         height =  results.response;        
-        inches = 12*height.charAt(0);
+        inches = 12*Number(height.charAt(0));
+        var tempinches=Number(height.charAt(2));
+        if(height.charAt(3)!='\''){
+        tempinches = 10+Number(height.charAt(3).valueOf());
+    }
+        inches =  Number(inches+tempinches);
 
-        var tempinches=height.charAt(2);
-        
-        if(height.charAt(3)!='\'')
-        tempinches = (tempinches*10)+height.charAt(3); 
-        inches +=  tempinches;
+        console.log(inches);
+
         builder.Prompts.text(session, 'Please enter your weight in pounds: ');
     },
 
@@ -132,8 +134,8 @@ bot.dialog('survey', [
         tdee=Math.floor(tdee);
         
         session.endDialog('Got it! ' + session.userData.name +
-            ', your Basal Metabolic rate is' + BMR + '. Therefore, your Total Daily Energy Expenditure is ' 
-            + tdee + 'calories');
+            ', your Basal Metabolic rate is ' + Number(bmr) + '. Therefore, your Total Daily Engery Expenditure is ' 
+            + tdee + ' calories');
     }
 
 
