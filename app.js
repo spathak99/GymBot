@@ -18,9 +18,18 @@ var provider = new firebase.auth.FacebookAuthProvider();
 
 
 var database = firebase.database();
-
+var setup = false;
 var loginWithFacebook = false;
 var ID;
+var restDay;
+var mon = 0;
+var tues = 1;
+var wed = 2;
+var thur = 3;
+var fri = 4;
+var sat = 5;
+var sun = 6;
+var routine= [[]];
 var weight;
 var height;
 var inches;
@@ -73,133 +82,187 @@ setInterval(function () {
         delete newConversationAddress.conversation;
 
         // start survey dialog
-        bot.beginDialog(newConversationAddress, 'survey', null, function (err) {
-            if (err) {
-                // error ocurred while starting new conversation. Channel not supported?
-                bot.send(new builder.Message()
-                    .text('This channel does not support this operation: ' + err.message)
-                    .address(address));
-            }
-        });
+        if(setup == false){
+            bot.beginDialog(newConversationAddress, 'survey', null, function (err) {
+                if (err) {
+                    // error ocurred while starting new conversation. Channel not supported?
+                    bot.send(new builder.Message()
+                        .text('This channel does not support this operation: ' + err.message)
+                        .address(address));
+                }
+            });
+        }
+       
 
     });
 }, 5000);
 
 var choices = ['Bulking', 'Lean Muscle', 'Losing Weight'];
 var activities = ['Light', 'Moderate', 'Active'];
-
+var days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 var genders = ['Male', 'Female'];
-bot.dialog('survey', [
-    function(session) {
-        builder.Prompts.text(session, 'Hi, would you like to sign in with facebook?');
-    },
-    function (session, results) {
-        if((results.response + "").toUpperCase() == ("yes").toUpperCase()) {
-            //firebase.auth().signInWithRedirect(provider);
-            var msg = new builder.Message(session);
-            msg.attachments([
-                new builder.SigninCard(session)
-                    .button(
-                        "Sign in with facebook",
-                        "https://www.facebook.com/v2.10/dialog/oauth?client_id=1951046761818596&redirect_uri=https://www.facebook.com/connect/login_success.html"
-                    )
-            ]);
-            session.send(msg);
-        } else {
-            session.send("Okay, we'll continue without using facebook.");
-        }
-        builder.Prompts.text(session, 'Hello! What\'s your name?');
-    },
-    function (session, results) {
-        session.userData.name = results.response;
 
-        name =  results.response;
-        
-        builder.Prompts.text(session, 'Hi ' + session.userData.name + ', please enter your age:');
-
-    },
-
-
-    function (session, results) {
-        session.userData.age = results.response;
-        age = Number(results.response);
-        builder.Prompts.choice(session, 'Please enter your gender:',genders);
-    },
-
-    function (session, results) {
-        session.userData.gender = results.response;
-        gender = results.response;
-        builder.Prompts.choice(session, 'Enter your estimated activity type',activities);
-    },
-    
-    function (session, results) {
-        session.userData.ActivityType = results.response.entity;
-        ActivityType = results.response;
-        builder.Prompts.choice(session, 'What are your fitness goals?',choices);
-    },
-    function (session, results) {
-        session.userData.goals = results.response.entity;
-        goal =  results.response.entity;
-        builder.Prompts.text(session, 'Please enter your height in feet and inches as such(5\'7"):');
-    },
-    function (session, results) {
-        session.userData.height = results.response;
-        height =  results.response;        
-        inches = 12*Number(height.charAt(0));
-        var tempinches=Number(height.charAt(2));
-        if(height.charAt(3)!='\''){
-        tempinches = 10+Number(height.charAt(3).valueOf());
-    }
-        inches =  Number(inches+tempinches);
-
-        console.log(inches);
-
-        builder.Prompts.text(session, 'Please enter your weight in pounds: ');
-    },
-
-    function (session, results) {
-        session.userData.weight = results.response; 
-        weight =  Number(results.response);
-        console.log(weight);
-        if(gender == genders[0]){
-            bmr = 66 + (0.453592 * weight)*13.7 + (inches * 2.54)*5 - (6.8 * age);
-        }else{
-            bmr = 665 + (0.453592 * weight)*9.6 + (inches * 2.54)*1.8- (4.7 * age);
-        }
-        
-
-        bmr=Math.floor(bmr);
-        if(ActivityType==activities[0])
-        tdee = bmr*1.375;
-        else if (ActivityType==activities[1])
-        tdee= bmr*1.55;
-        else
-        tdee= bmr *1.725;
-        tdee=Math.floor(tdee);
-
-        
-
-        session.endDialog('Got it! ' + session.userData.name +
-            ', your Basal Metabolic rate is ' + Number(bmr) + '. Therefore, your Total Daily Energy Expenditure is ' 
-            + tdee + ' calories');
-            if(goal==choices[0]){
-                cal_goal = tdee + 750;
-                session.send('Because you are trying to bulk up, your calorie goal should be '
-            + cal_goal + ' calories consumed per day.' );
-            }else if(goal == choices[1]){
-                cal_goal = tdee - 150;
-                session.send('Because you are trying to get lean, your calorie goal should be '
-            + cal_goal + ' calories consumed per day.' );
-            }else if(goal == choices[2]){
-                cal_goal = tdee - 500;
-                session.send('Because you are trying to lose weight, your calorie goal should be '
-                + cal_goal + ' calories consumed per day.' );
+    bot.dialog('survey', [
+        function(session) {
+            builder.Prompts.text(session, 'Hi, would you like to sign in with facebook?');
+        },
+        function (session, results) {
+            if((results.response + "").toUpperCase() == ("yes").toUpperCase()) {
+                //firebase.auth().signInWithRedirect(provider);
+                var msg = new builder.Message(session);
+                msg.attachments([
+                    new builder.SigninCard(session)
+                        .button(
+                            "Sign in with facebook",
+                            "https://www.facebook.com/v2.10/dialog/oauth?client_id=1951046761818596&redirect_uri=https://www.facebook.com/connect/login_success.html"
+                        )
+                ]);
+                session.send(msg);
+            } else {
+                session.send("Okay, we'll continue without using facebook.");
             }
-            StoreUserData();
-    }
-
+            builder.Prompts.text(session, 'Hello! What\'s your name?');
+        },
+        function (session, results) {
+            session.userData.name = results.response;
     
-]);
+            name =  results.response;
+            
+            builder.Prompts.text(session, 'Hi ' + session.userData.name + ', please enter your age:');
+    
+        },
+    
+    
+        function (session, results) {
+            session.userData.age = results.response;
+            age = Number(results.response);
+            builder.Prompts.choice(session, 'Please enter your gender:',genders);
+        },
+    
+        function (session, results) {
+            session.userData.gender = results.response;
+            gender = results.response;
+            builder.Prompts.choice(session, 'Enter your estimated activity type',activities);
+        },
+        
+        function (session, results) {
+            session.userData.ActivityType = results.response.entity;
+            ActivityType = results.response;
+            builder.Prompts.choice(session, 'What are your fitness goals?',choices);
+        },
+        function (session, results) {
+            session.userData.goals = results.response.entity;
+            goal =  results.response.entity;
+            builder.Prompts.text(session, 'Please enter your height in feet and inches as such(5\'7"):');
+        },
+        function (session, results) {
+            session.userData.height = results.response;
+            height =  results.response;        
+            inches = 12*Number(height.charAt(0));
+            var tempinches=Number(height.charAt(2));
+            if(height.charAt(3)!='\''){
+            tempinches = 10+Number(height.charAt(3).valueOf());
+        }
+            inches =  Number(inches+tempinches);
+    
+            console.log(inches);
+    
+            builder.Prompts.text(session, 'Please enter your weight in pounds: ');
+        },
+    
+        function (session, results) {
+            session.userData.weight = results.response; 
+            weight =  Number(results.response);
+            console.log(weight);
+            if(gender == genders[0]){
+                bmr = 66 + (0.453592 * weight)*13.7 + (inches * 2.54)*5 - (6.8 * age);
+            }else{
+                bmr = 665 + (0.453592 * weight)*9.6 + (inches * 2.54)*1.8- (4.7 * age);
+            }
+            
+    
+            bmr=Math.floor(bmr);
+            if(ActivityType==activities[0])
+            tdee = bmr*1.375;
+            else if (ActivityType==activities[1])
+            tdee= bmr*1.55;
+            else
+            tdee= bmr *1.725;
+            tdee=Math.floor(tdee);
+    
+            
+    
+            session.send('Got it! ' + session.userData.name +
+                ', your Basal Metabolic rate is ' + Number(bmr) + '. Therefore, your Total Daily Energy Expenditure is ' 
+                + tdee + ' calories');
+                if(goal==choices[0]){
+                    cal_goal = tdee + 750;
+                    session.send('Because you are trying to bulk up, your calorie goal should be '
+                + cal_goal + ' calories consumed per day.' );
+                }else if(goal == choices[1]){
+                    cal_goal = tdee - 150;
+                    session.send('Because you are trying to get lean, your calorie goal should be '
+                + cal_goal + ' calories consumed per day.' );
+                }else if(goal == choices[2]){
+                    cal_goal = tdee - 500;
+                    session.send('Because you are trying to lose weight, your calorie goal should be '
+                    + cal_goal + ' calories consumed per day.' );
+                }
+                session.send('Now, I will create a workout routine tailored just for you!');
+                session.send('What day of the week would you like to be your rest day?');
+                var adaptiveCardMessage = new builder.Message(session)
+                .addAttachment({
+                    contentType: "application/vnd.microsoft.card.adaptive",
+                    content: {
+                        type: "AdaptiveCard",
+                        speak: "What day of the week would you like to be your rest day?",
+                           body: [
+                                {
+                                    "type": "Input.ChoiceSet",
+                                    "id": "Days",
+                                    "style":"compact",
+                                    "choices": [
+                                        {
+                                            "title": "Monday",
+                                            "value": "0",
+                                        },
+                                        {
+                                            "title": "Tuesday",
+                                            "value": "1"
+                                        },
+                                        {
+                                            "title": "Wednesday",
+                                            "value": "2"
+                                        },
+                                        {
+                                            "title": "Thursday",
+                                            "value": "4"
+                                        },{
+                                            "title": "Friday",
+                                            "value": "4"
+                                        },{
+                                            "title": "Saturday",
+                                            "value": "5"
+                                        },{
+                                            "title": "Sunday",
+                                            "value": "6"
+                                        }
+                                    ]
+                                }
+                            ]
+                    }
+                });
+            
+                session.send(adaptiveCardMessage);
+                //builder.Prompts.text(session, 'Which of the following equipment do you have access to?',equipments);
+                
+               
+                
+        }  
+        //StoreUserData();
+    ]);
+    
+
 
 function StoreUserData() {
    
@@ -212,6 +275,7 @@ function StoreUserData() {
         age: age,
         bmr: bmr,
         tdee: tdee,
+        restDay: restDay,
         calorie_goal: cal_goal
     }
     writeToDatabase("nonFacebookUsers/" + name, obj);
@@ -229,3 +293,4 @@ var readFromDatabase = function(databasePath) {
 
         });
 }
+
