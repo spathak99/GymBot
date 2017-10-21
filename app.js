@@ -33,11 +33,7 @@ var light = 1.375;
 var moderate = 1.55;
 var active = 1.75;
 var BMR;
-<<<<<<< HEAD
 var TDEE;
-=======
-var tdee;
->>>>>>> 9d2d6f7efddf73617cc2b88d5998ce75a509c047
 // Setup Restify Server
 var server = restify.createServer();
 server.listen(process.env.port || process.env.PORT || 3978, function () {
