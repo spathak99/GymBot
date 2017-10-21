@@ -1,0 +1,27 @@
+{
+  "name": "gymbot",
+  "version": "1.0.0",
+  "description": "GymBOt",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/spathak99/GymBot.git"
+  },
+  "keywords": [
+    "Chat",
+    "Bot"
+  ],
+  "author": "Shardool Pathak",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/spathak99/GymBot/issues"
+  },
+  "homepage": "https://github.com/spathak99/GymBot#readme",
+  "dependencies": {
+    "botbuilder": "^3.11.0",
+    "restify": "^6.2.3"
+  }
+}
