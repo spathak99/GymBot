@@ -13,6 +13,7 @@ var moderate = 1.55;
 var active = 1.75;
 var BMR;
 var tdee;
+var cal_goal;
 // Setup Restify Server
 var server = restify.createServer();
 server.listen(process.env.port || process.env.PORT || 3978, function () {
@@ -132,9 +133,23 @@ bot.dialog('survey', [
         tdee= bmr *1.725;
         tdee=Math.floor(tdee);
         
-        session.endDialog('Got it! ' + session.userData.name +
+        session.send('Got it! ' + session.userData.name +
             ', your Basal Metabolic rate is ' + Number(bmr) + '. Therefore, your Total Daily Engery Expenditure is ' 
             + tdee + ' calories');
+            if(goal==choices[0]){
+                cal_goal = tdee + 750;
+                session.send('Because you are trying to bulk up, your calorie goal should be '
+            + cal_goal + ' calories consumed per day.' );
+            }else if(goal == choices[1]){
+                cal_goal = tdee - 150;
+                session.send('Because you are trying to get lean, your calorie goal should be '
+            + cal_goal + ' calories consumed per day.' );
+            }else if(goal == choices[2]){
+                cal_goal = tdee - 500;
+                session.send('Because you are trying to lose weight, your calorie goal should be '
+                + cal_goal + ' calories consumed per day.' );
+            }
+            
     }
 
 
