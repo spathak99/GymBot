@@ -116,13 +116,10 @@ bot.dialog('survey', [
     },
     function (session, results) {
         session.userData.name = results.response;
-<<<<<<< HEAD
-        name =  results.response;
-        builder.Prompts.text(session, 'Please enter your age:');
-=======
+
         name =  results.response.entity;
         builder.Prompts.text(session, 'Hi ' + session.userData.name + ', please enter your age:');
->>>>>>> 9d2d6f7efddf73617cc2b88d5998ce75a509c047
+
     },
 
     function (session, results) {
