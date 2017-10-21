@@ -1,7 +1,7 @@
 {
   "name": "gymbot",
   "version": "1.0.0",
-  "description": "GymBOt",
+  "description": "GymBot",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -22,7 +22,10 @@
   "homepage": "https://github.com/spathak99/GymBot#readme",
   "dependencies": {
     "botbuilder": "^3.11.0",
+    "cheerio": "^1.0.0-rc.2",
     "firebase": "^4.6.0",
+    "request": "^2.83.0",
+    "request-promise-native": "^1.0.5",
     "restify": "^6.2.3"
   }
 }
