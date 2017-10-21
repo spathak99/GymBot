@@ -78,7 +78,6 @@ setInterval(function() {
 var choices = ['Bulking', 'Lean', 'Weight Loss'];
 var activities = ['Light', 'Moderate', 'Active'];
 var days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
-var setupDone = false;
 const scheduleTemplate = [
     [bodybuilder.MUSCLES[0 ],bodybuilder.MUSCLES[1 ],bodybuilder.MUSCLES[9 ],bodybuilder.MUSCLES[14]],
     [bodybuilder.MUSCLES[2 ],bodybuilder.MUSCLES[3 ],bodybuilder.MUSCLES[4 ],bodybuilder.MUSCLES[12]],
@@ -183,14 +182,14 @@ bot.dialog('survey', [
                 }]
             }
         });
-        setupDone = true;
+        session.userData.setupDone = true;
         session.send(adaptiveCardMessage);
     }
 ]);
 
 bot.use({
     botbuilder: function(session, next) {
-        if (setupDone) {
+        if (session.userData.setupDone) {
             session.userData.equipment = JSON.stringify(session.message.value.equipment.split(';'));
 
             var daysWithoutRestDay = days.slice(0);
