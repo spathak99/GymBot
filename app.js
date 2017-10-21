@@ -43,6 +43,7 @@ var active = 1.75;
 var bmr;
 var tdee;
 var cal_goal;
+var BUTTONS = { listStyle: builder.ListStyle.button };
 // Setup Restify Server
 var server = restify.createServer();
 server.listen(process.env.port || process.env.PORT || 3978, function () {
@@ -104,7 +105,7 @@ var genders = ['Male', 'Female'];
 
     bot.dialog('survey', [
         function(session) {
-            builder.Prompts.text(session, 'Hi, would you like to sign in with facebook?');
+            builder.Prompts.choice(session, 'Hi, would you like to sign in with facebook?', "yes|no", BUTTONS)
         },
         function (session, results) {
             if((results.response + "").toUpperCase() == ("yes").toUpperCase()) {
@@ -136,24 +137,24 @@ var genders = ['Male', 'Female'];
         function (session, results) {
             session.userData.age = results.response;
             age = Number(results.response);
-            builder.Prompts.choice(session, 'Please enter your gender:',genders);
+            builder.Prompts.choice(session, 'Please enter your gender:',genders, BUTTONS);
         },
     
         function (session, results) {
             session.userData.gender = results.response;
             gender = results.response;
-            builder.Prompts.choice(session, 'Enter your estimated activity type',activities);
+            builder.Prompts.choice(session, 'Enter your estimated activity type',activities, BUTTONS);
         },
         
         function (session, results) {
             session.userData.ActivityType = results.response.entity;
             ActivityType = results.response;
-            builder.Prompts.choice(session, 'What are your fitness goals?',choices);
+            builder.Prompts.choice(session, 'What are your fitness goals?',choices, BUTTONS);
         },
         function (session, results) {
             session.userData.goals = results.response.entity;
             goal =  results.response.entity;
-            builder.Prompts.text(session, 'Please enter your height in feet and inches as such(5\'7"):');
+            builder.Prompts.text(session, 'Please enter your height in feet and inches');
         },
         function (session, results) {
             session.userData.height = results.response;
