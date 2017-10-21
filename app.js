@@ -180,7 +180,7 @@ bot.dialog('survey', [
         
 
         session.endDialog('Got it! ' + session.userData.name +
-            ', your Basal Metabolic rate is ' + Number(bmr) + '. Therefore, your Total Daily Engery Expenditure is ' 
+            ', your Basal Metabolic rate is ' + Number(bmr) + '. Therefore, your Total Daily Energy Expenditure is ' 
             + tdee + ' calories');
             if(goal==choices[0]){
                 cal_goal = tdee + 750;
