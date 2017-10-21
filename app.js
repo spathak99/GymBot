@@ -205,17 +205,28 @@ bot.use({
     botbuilder: function(session, next) {
         if (setupDone) {
             data.equipment = JSON.stringify(session.message.value.equipment.split(';'));
-            //TODO: Calculate schedule
+            //TODO: Calculate schedule with every day except for data.restDay using bodybuilder.MUSCLES
+            //Write that to data.schedule
             data.setup = true;
-            //TODO: Store User Data
-            //Tell the user to say "Start my workout"
-        }
-        next();
+            StoreUserData().then(function() {
+                //TODO: Show data.schedule in a nice fashion
+                //TODO: Tell user the keyword to start any workout is "Start my workout"
+            });
+        } else next();
     }
 });
 
+bot.dialog('workout', [
+    //TODO: use bodybuilder.getExercises to get a list of 15 exercised for the given day
+    //Muscles is defined by data.schedule for this weekday
+    //ExTypes is defined by data entered during setup. You wouldnt powerlift trying to get lean
+    //Equipment is literally just data.equipment
+    //The promise returned by this is a JSON object. Display it's contents in the Chat.
+]);
+
 function StoreUserData() {
     writeToDatabase("nonFacebookUsers/" + name, data);
+    //TODO: Remember to just read and write the data variable. It has everything in it
 }
 
 var writeToDatabase = function(databasePath, objectToWrite) {
