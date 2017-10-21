@@ -39,7 +39,7 @@ var userStore = [];
 // Receive messages from the user and respond by echoing each message back (prefixed with 'You said:')
 var bot = new builder.UniversalBot(connector, function (session) {
     //restDay, height, sex, activityType, age, bmr, tdee, calGoal, goal, equipment,day0,day1,day2,day3,day4,day5,day6
-    //session.userData = {};
+    session.userData = {};
     // store user's address
     var address = session.message.address;
     userStore.push(address);
