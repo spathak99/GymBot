@@ -129,7 +129,7 @@ bot.dialog('survey', [
     function (session, results) {
         session.userData.gender = results.response;
         gender = results.response;
-        builder.Prompts.choice(session, 'Enter your estimated activy type',activities);
+        builder.Prompts.choice(session, 'Enter your estimated activity type',activities);
     },
     
     function (session, results) {
@@ -177,7 +177,7 @@ bot.dialog('survey', [
         tdee= bmr *1.725;
         tdee=Math.floor(tdee);
 
-        StoreUserData();
+        
 
         session.endDialog('Got it! ' + session.userData.name +
             ', your Basal Metabolic rate is ' + Number(bmr) + '. Therefore, your Total Daily Engery Expenditure is ' 
@@ -195,14 +195,14 @@ bot.dialog('survey', [
                 session.send('Because you are trying to lose weight, your calorie goal should be '
                 + cal_goal + ' calories consumed per day.' );
             }
-            
+            StoreUserData();
     }
 
-
+    
 ]);
 
 function StoreUserData() {
-    
+   
     var obj = {
         weight: weight,
         inches: inches,
@@ -211,7 +211,8 @@ function StoreUserData() {
         goal: goal,
         age: age,
         bmr: bmr,
-        tdee: tdee
+        tdee: tdee,
+        calorie_goal: cal_goal
     }
     writeToDatabase("nonFacebookUsers/" + name, obj);
 }
