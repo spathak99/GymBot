@@ -5,16 +5,15 @@ let ENDPOINT = "https://www.bodybuilding.com"
 
 let API = {
   _musclesIds: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,17,18],
-  _muscles: ["CHEST","FOREARMS","LATS","MIDDLE_BACK","LOWER_BACK","NECK","QUADRICEPS","HAMSTRINGS","CALVES","TRICEPS","TRAPS","SHOULDERS","ABDOMINALS","GLUTES","BICEPS","ADDUCTORS","ABDUCTORS"],
+  MUSCLES: ["Chest","Forearms","Lats","Middle Back","Lower Back","Neck","Quadriceps","Hamstrings","Calves","Triceps","Traps","Shoulders","Abdominals","Glutes","Biceps","Adductors","Abductors"],
   _exTypesIds: [2,6,4,7,1,3,5],
-  _exTypes: ["CARDIO","OLYMPIC_WEIGHTLIFTING","PLYOMETRICS","POWERLIFTING","STRENGTH","STRETCHING","STRONGMAN"],
+  EXTYPES: ["Cardio","Olympic Weightlifting","Plyometrics","Powerlifting","Strength","Stretching","Strongman"],
   _equipmentIds: [9,14,2,10,5,6,4,15,1,8,11,3,7],
-  _equipment: ["BANDS","FOAM_ROLL","BARBELL","KETTLEBELLS","BODY_ONLY","MACHINE","CABLE","MEDICINE_BALL","DUMBBELL","NONE","EZ_CURL_BAR","OTHER","EXERCISE_BALL"],
-  _decodeType: function(num, type) {
-    let types = [];
-    for (let i = 0; i < this._muscles.length; i++)
-      if (num & (1 << i)) types.push(this['_' + type + 'Ids'][i]);
-    return types;
+  EQUIPMENT: ["Bands","Foam Roll","Barbell","Kettlebells","Body Only","Machine","Cable","Medicine Ball","Dumbbell","None","Ez Curl Bar","Other","Exercise Ball"],
+  _genTransfer: function(type) {
+    return function(name) {
+      return API['_' + type + 'Ids'][API[type.toUpperCase()].indexOf(name)];
+    };
   },
 
   getExercises: function(muscles, exTypes, equipment) {
@@ -25,9 +24,9 @@ let API = {
         "User-Agent": 'GymBot'
       },
       qs: {
-        muscleid:       this._decodeType(muscles   || 0, "muscles"  ).join(','),
-        exercisetypeid: this._decodeType(exTypes   || 0, "exTypes"  ).join(','),
-        equipmentid:    this._decodeType(equipment || 0, "equipment").join(',')
+        muscleid:       muscles  .map(this._genTransfer('muscles')  ).join(','),
+        exercisetypeid: exTypes  .map(this._genTransfer('exTypes')  ).join(','),
+        equipmentid:    equipment.map(this._genTransfer('equipment')).join(',')
       }
     }).then(html => {
       let $ = cheerio.load(html);
@@ -56,14 +55,6 @@ let API = {
       return Promise.all(rps).then(_ => exercises);
     });
   }
-}
-
-//Make Psudeo Enum API.MUSCLES and API.EXTYPES
-for (let type of ["muscles", "exTypes", "equipment"]) {
-  let newTypeVariable = type.toUpperCase();
-  API[newTypeVariable] = {};
-  for (let i = 0; i < API["_" + type].length; i++)
-    API[newTypeVariable][API["_" + type][i]] = 1 << i;
 }
 
 exports = module.exports = API;
