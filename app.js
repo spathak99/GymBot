@@ -71,10 +71,8 @@ setInterval(function() {
         } else {
             //TODO: begin other dialog
         }
-       
-
     });
-}, 500);
+}, 1000);
 
 var choices = ['Bulking', 'Lean', 'Weight Loss'];
 var activities = ['Light', 'Moderate', 'Active'];
@@ -95,7 +93,7 @@ bot.dialog('survey', [
 
     function (session, results) {
         name = results.response;
-        builder.Prompts.text(session, 'Hi ' + session.userData.name + ', please enter your age:');
+        builder.Prompts.text(session, 'Hi, ' + data.name + '! Please enter your age.');
     },
 
     function (session, results) {
@@ -195,7 +193,7 @@ bot.use({
     botbuilder: function(session, next) {
         if (setupDone) {
             data.equipment = JSON.stringify(session.message.value.equipment.split(';'));
-            
+
             var daysWithoutRestDay = days.slice(0);
             daysWithoutRestDay.splice(days.indexOf(data.restDay), 1);
 
