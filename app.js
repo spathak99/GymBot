@@ -205,11 +205,11 @@ bot.use({
     botbuilder: function(session, next) {
         if (setupDone) {
             data.equipment = JSON.stringify(session.message.value.equipment.split(';'));
-            data.day0 = [bodybuilder.MUSCLES[0],,bodybuilder.MUSCLES[1],bodybuilder.MUSCLES[9],bodybuilder.MUSCLES[14]];
+            data.day0 = [bodybuilder.MUSCLES[0],bodybuilder.MUSCLES[1],bodybuilder.MUSCLES[9],bodybuilder.MUSCLES[14]];
             data.day1 = [bodybuilder.MUSCLES[2],bodybuilder.MUSCLES[3],bodybuilder.MUSCLES[4],bodybuilder.MUSCLES[12]];
             data.day2 = [bodybuilder.MUSCLES[5],bodybuilder.MUSCLES[10],bodybuilder.MUSCLES[11],bodybuilder.MUSCLES[15]];
             data.day3 = [bodybuilder.MUSCLES[6],bodybuilder.MUSCLES[7],bodybuilder.MUSCLES[8],bodybuilder.MUSCLES[16]];
-            data.day4 = [bodybuilder.MUSCLES[0],,bodybuilder.MUSCLES[1],bodybuilder.MUSCLES[9],bodybuilder.MUSCLES[14]];
+            data.day4 = [bodybuilder.MUSCLES[0],bodybuilder.MUSCLES[1],bodybuilder.MUSCLES[9],bodybuilder.MUSCLES[14]];
             data.day5 = [bodybuilder.MUSCLES[2],bodybuilder.MUSCLES[3],bodybuilder.MUSCLES[4],bodybuilder.MUSCLES[12]];
             
             //TODO: Calculate schedule with every day except for data.restDay using bodybuilder.MUSCLES
