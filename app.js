@@ -1,6 +1,16 @@
 var restify = require('restify');
 var builder = require('botbuilder');
-
+var weight;
+var height;
+var inches;
+var feet;
+var gender;
+var goal;
+var age;
+var light = 1.375;
+var moderate = 1.55;
+var active = 1.75;
+var BMR;
 // Setup Restify Server
 var server = restify.createServer();
 server.listen(process.env.port || process.env.PORT || 3978, function () {
@@ -53,27 +63,50 @@ setInterval(function () {
 }, 5000);
 
 var choices = ['Bulking', 'Lean Muscle', 'Losing Weight'];
-
+var genders = ['Male', 'Female'];
 bot.dialog('survey', [
     function (session) {
         builder.Prompts.text(session, 'Hello! What\'s your name?');
     },
     function (session, results) {
         session.userData.name = results.response;
-        builder.Prompts.choice(session, 'Hi ' + results.response + ', What are your fitness goals?',choices);
+        name =  results.response.entity;
+        builder.Prompts.text(session, 'Please enter your age:');
+    },
+
+    function (session, results) {
+        session.userData.age = results.response;
+        age = results.response;
+        builder.Prompts.choice(session, 'Hi, please enter your gender:',genders);
+    },
+    
+    function (session, results) {
+        session.userData.gender = results.response.entity;
+        gender = results.response;
+        builder.Prompts.choice(session, 'Hi ' + session.userData.name + ', What are your fitness goals?',choices);
     },
     function (session, results) {
         session.userData.goals = results.response.entity;
-        builder.Prompts.text(session, 'Please enter your height in feet:');
+        goal =  results.response.entity;
+        builder.Prompts.text(session, 'Please enter your height in feet and inches:');
     },
     function (session, results) {
         session.userData.height = results.response;
+        height =  results.response;
         builder.Prompts.text(session, 'Please enter your weight in pounds: ');
     },
     function (session, results) {
         session.userData.weight = results.response;
+        weight =  results.response;
+        if(gender == genders[0]){
+            bmr = 66 + (0.453592 * weight)*13.7 + (height * 2.54)*5 - (6.8 * age);
+        }else{
+            bmr = 665 + (0.453592 * weight)*9.6 + (height * 2.54)*1.8- (4.7 * age);
+        }
         session.endDialog('Got it! ' + session.userData.name +
-            ', your fitness goal is ' + session.userData.goals +
-            ', your height is ' + session.userData.height + ' feet and your weight is ' + session.userData.weight) + ' pounds';
+            ', your Basal Metabolic rate is' + '___ ' + '. Therefore, your Total Daily Engery Expenditure is' 
+            + '___ ' + 'calories');
     }
+
+
 ]);
