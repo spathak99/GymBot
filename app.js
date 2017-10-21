@@ -54,7 +54,7 @@ setInterval(function () {
 
 bot.dialog('survey', [
     function (session) {
-        builder.Prompts.text(session, 'Hello... What\'s your name?');
+        builder.Prompts.text(session, 'Hello! What\'s your name?');
     },
     function (session, results) {
         session.userData.name = results.response;
@@ -62,16 +62,16 @@ bot.dialog('survey', [
     },
     function (session, results) {
         session.userData.goals = results.response.text;
-        builder.Prompts.text(session, 'Please enter your height ');
+        builder.Prompts.text(session, 'Please enter your height in feet:');
     },
     function (session, results) {
         session.userData.height = results.response;
-        builder.Prompts.text(session, 'Please enter your weight ');
+        builder.Prompts.text(session, 'Please enter your weight in pounds: ');
     },
     function (session, results) {
         session.userData.weight = results.response;
         session.endDialog('Got it! ' + session.userData.name +
             ', your fitness goal is ' + session.userData.goals +
-            ', your height is,' + session.userData.height + ' and your weight is' + session.userData.weight);
+            ', your height is,' + session.userData.height + ' feet and your weight is' + session.userData.weight) + ' pounds';
     }
 ]);
