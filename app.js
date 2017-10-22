@@ -91,8 +91,8 @@ const scheduleTemplate = [
 ];
 bot.dialog('survey', [
     function(session, results) {
-        //builder.Prompts.text(session, 'Hello! What\'s your name?');
-        session.send("TESTING");
+        builder.Prompts.text(session, 'Hello! What\'s your name?');
+        //session.send("TESTING");
     },
 
     function (session, results) {
@@ -167,7 +167,7 @@ bot.dialog('survey', [
     },
     
     function (session, results, next) {
-        session.userData.restDay = results.response;
+        session.userData.restDay = results.response.entity;
         builder.Prompts.text(session, 'Which of the following equipment do you have access to (or prefer)?', bodybuilder._equipments);
         var adaptiveCardMessage = new builder.Message(session).addAttachment({
             contentType: "application/vnd.microsoft.card.adaptive",
