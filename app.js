@@ -31,7 +31,7 @@ send Receipts, and use Carousels.
 * ---------------------------------------------------------------------------------------- */
 
 var restify = require('restify');
-var builder = require('../../core/');
+var builder = require('botbuilder');
 
 //=========================================================
 // Bot Setup
