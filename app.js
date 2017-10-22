@@ -76,7 +76,7 @@ setInterval(function() {
             //TODO: begin other dialog
         }
     });
-}, 500);
+}, 5000);
 
 var choices = ['Bulking', 'Lean', 'Weight Loss'];
 var activities = ['Light', 'Moderate', 'Active'];
