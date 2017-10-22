@@ -325,6 +325,7 @@ bot.dialog('workout', [
     function(session, args, next) {
         var weekday = new Date().getDay();
         var todaySchedule = session.userData.scheduleWithRestBlank[weekday];
+        session.userData.todaySchedule = todaySchedule;
         if (todaySchedule == null) {
             session.send("Today is a rest day! Enjoy your day off of the gym!");
             //TODO: Something
