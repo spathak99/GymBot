@@ -76,7 +76,7 @@ setInterval(function() {
             //TODO: begin other dialog
         }
     });
-}, 5000);
+}, 500);
 
 var choices = ['Bulking', 'Lean', 'Weight Loss'];
 var activities = ['Light', 'Moderate', 'Active'];
@@ -92,6 +92,8 @@ const scheduleTemplate = [
 bot.dialog('survey', [
     function(session, results) {
         builder.Prompts.text(session, 'Hello! What\'s your name?');
+        console.log(JSON.stringify(session.userData));
+        console.log("KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK");
     },
 
     function (session, results) {
