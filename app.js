@@ -61,20 +61,14 @@ setInterval(function() {
         var newConversationAddress = Object.assign({}, address);
         delete newConversationAddress.conversation;
 
-        // start survey dialog
-        //TODO: Don't start this unless setup is false
-        if(true){
-            bot.beginDialog(newConversationAddress, 'survey', null, function (err) {
-                if (err) {
-                    // error ocurred while starting new conversation. Channel not supported?
-                    bot.send(new builder.Message()
-                        .text('This channel does not support this operation: ' + err.message)
-                        .address(address));
-                }
-            });
-        } else {
-            //TODO: begin other dialog
-        }
+        bot.beginDialog(newConversationAddress, 'survey', null, function (err) {
+            if (err) {
+                // error ocurred while starting new conversation. Channel not supported?
+                bot.send(new builder.Message()
+                    .text('This channel does not support this operation: ' + err.message)
+                    .address(address));
+            }
+        });
     });
 }, 500);
 
@@ -89,17 +83,34 @@ const scheduleTemplate = [
     [bodybuilder.MUSCLES[0 ],bodybuilder.MUSCLES[1 ],bodybuilder.MUSCLES[9 ],bodybuilder.MUSCLES[14]],
     [bodybuilder.MUSCLES[2 ],bodybuilder.MUSCLES[3 ],bodybuilder.MUSCLES[4 ],bodybuilder.MUSCLES[12]]
 ];
+const exTypeMap = {
+    'Bulking': ["Powerlifting", "Strength", "Strongman"],
+    'Lean': ["Stretching", "Strength"],
+    'Weight Loss': ["Plyometrics", "Cardio"]
+}
 bot.dialog('survey', [
-    function(session, results) {
+    function(session, results, next) {
+        //if (session.userData.name) return next();
         builder.Prompts.text(session, 'Hello! What\'s your name?');
-        //session.send("TESTING");
     },
 
     function (session, results) {
-        console.log(JSON.stringify(session.userData));
-        console.log("KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK");
         session.userData.name = results.response;
-        builder.Prompts.text(session, 'Hi, ' + session.userData.name + '! Please enter your age.');
+        ReadUserData(session).then(function(newData) {
+            console.log("!!!! TWO");
+            if (newData) {
+                for (var key of Object.keys(newData)) {
+                    session.userData[key] = newData[key];
+                }
+            }
+            console.log("!!!! THREE", !!session.userData.setup);
+            if (session.userData.setup) {
+                //session.endDialog();
+                session.beginDialog("workout");
+            } else {
+                builder.Prompts.text(session, 'Hi, ' + session.userData.name + '! Please enter your age.');
+            }
+        });
     },
 
     function (session, results) {
@@ -191,19 +202,38 @@ bot.dialog('survey', [
         session.userData.setupDone = true;
         session.send(adaptiveCardMessage);
     }
-]);
+]).triggerAction({
+    matches: /^start my workout$/i,
+    onSelectAction: (session, args, next) => {
+        if (session.userData.setup) {
+            session.endDialog();
+            session.beginDialog("workout", args);
+        }
+    }
+}).triggerAction({
+    matches: /^reset data$/i,
+    onSelectAction: (session, args, next) => {
+        for (var key of Object.keys(session.userData)) {
+            delete session.userData[key];
+        }
+        StoreUserData(session);
+        session.beginDialog("survey", args);
+        console.log("RESET");
+    }
+});
+
 
 bot.use({
     botbuilder: function(session, next) {
         if (session.userData.setupDone) {
-            session.userData.equipment = JSON.stringify((session.message.value || '').equipment.split(';'));
-
+            session.userData.setupDone = false;
+            session.userData.equipment = (session.message.value || {equipment: ''}).equipment.split(';');
             var daysWithoutRestDay = days.slice(0);
             daysWithoutRestDay.splice(days.indexOf(session.userData.restDay), 1);
-            session.userData.scheduleWithRestBlank = scheduleTemplate.slice(0).splice(days.indexOf(session.userData.restDay), 0, []);
+            session.userData.scheduleWithRestBlank = scheduleTemplate.slice(0);
+            session.userData.scheduleWithRestBlank.splice(days.indexOf(session.userData.restDay), 0, null);
             console.log(session.userData.scheduleWithRestBlank);
 
-            //Write that to session.userData.schedule
             session.userData.setup = true;
             StoreUserData(session);
             var columns = [{
@@ -242,39 +272,66 @@ bot.use({
                     }]
                 }
             });
+            session.send("Here's your personalized weekly gym schedule:");
             session.send(adaptiveCardMessage);
-            //TODO: Show session.userData.schedule in a nice fashion
-            //TODO: Tell user the keyword to start any workout is "Start my workout"
-
+            session.send("To start the day's workout, type \"start my workout\"");
+            session.beginDialog('survey');
         } else next();
     }
 });
 
+function genMuscle(num) {
+    return function(session, result) {
+        var muscle = session.userData.todaySchedule[num - 1];
+        var exType = exTypeMap[session.userData.goal];
+        bodybuilder.getExercises([muscle], exType, session.userData.equipment).then(function(json) {
+            var i = Math.floor(Math.random() * json.length);
+            var exercise = json[i];
+            if      (num == 1) suffix = 'st';
+            else if (num == 2) suffix = 'nd';
+            else if (num == 3) suffix = 'rd';
+            else               suffix = 'th';
+
+            session.send("Your " + num + suffix + " exercise is: " + exercise.name);
+            session.send("Here's how to do it:\n" + exercise.description);
+            //TODO: Embed VideoCard here with Video Url as exercise.videoUrl
+            builder.Prompts.choice(session, ' ', [num == 4 ? 'Finish' : 'Next'], BUTTONS);
+        });
+    };
+}
+
 bot.dialog('workout', [
-    //bodybuilder.getExercises(
-    //    session.userData.sc
-    //)
-    //TODO: use bodybuilder.getExercises to get a list of 15 exercised for the given day
-    //Muscles is defined by session.userData.schedule for this weekday
-    //ExTypes is defined by data entered during setup. You wouldnt powerlift trying to get lean
-    //Equipment is literally just session.userData.equipment
-    //The promise returned by this is a JSON object. Display it's contents in the Chat.
+    function(session, args, next) {
+        var weekday = new Date().getDay();
+        var todaySchedule = session.userData.scheduleWithRestBlank[weekday];
+        if (todaySchedule == null) {
+            session.send("Today is a rest day! Enjoy your day off of the gym!");
+            //TODO: Something
+        }
+        session.send("Todays workout is for the following muscles: " + todaySchedule.join(', '));
+        session.userData.todaySchedule = todaySchedule;
+        next()
+    },
+    genMuscle(1),
+    genMuscle(2),
+    genMuscle(3),
+    genMuscle(4)
 ]);
 
 function StoreUserData(session) {
     writeToDatabase("nonFacebookUsers/" + encodeURIComponent(session.userData.name), session.userData);
-    //TODO: Remember to just read and write the data variable. It has everything in it
 }
 
 var writeToDatabase = function(databasePath, objectToWrite) {
     database.ref(databasePath).set(objectToWrite);
 }
 
-var readFromDatabase = function(databasePath, session) {
-    return database.ref(databasePath).once("value")
+function ReadUserData(session) {
+    return database.ref("nonFacebookUsers/" + encodeURIComponent(session.userData.name)).once("value")
         .then(function(snapshot){
-            
             return snapshot.val();
-
-        });
+        })
+        .catch(function() {
+            console.log("!!!!!");
+        })
 }
