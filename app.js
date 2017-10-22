@@ -92,11 +92,12 @@ const scheduleTemplate = [
 bot.dialog('survey', [
     function(session, results) {
         builder.Prompts.text(session, 'Hello! What\'s your name?');
-        console.log(JSON.stringify(session.userData));
-        console.log("KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK");
+        
     },
 
     function (session, results) {
+        console.log(JSON.stringify(session.userData));
+        console.log("KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK");
         session.userData.name = results.response;
         builder.Prompts.text(session, 'Hi, ' + session.userData.name + '! Please enter your age.');
     },
