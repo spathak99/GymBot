@@ -55,6 +55,7 @@ var bot = new builder.UniversalBot(connector, function (session) {
     session.endDialog('Welcome to My Fitness Bot');
 });
 
+
 bot.set('storage', new builder.MemoryBotStorage());
 
 setInterval(function() {
@@ -298,13 +299,24 @@ function genMuscle(num) {
             else if (num == 3) suffix = 'rd';
             else               suffix = 'th';
 
+
             session.send("Your " + num + suffix + " exercise is: " + exercise.name);
             session.send("Here's how to do it:\n" + exercise.description);
-            //TODO: Embed VideoCard here with Video Url as exercise.videoUrl
+            var card = new builder.VideoCard(session)
+            .title(exercise.name)
+            .subtitle('Visual Explanation')
+            .media([
+                { url: exercise.videoUrl }
+            ])
+            .buttons([
+                builder.CardAction.openUrl(session, 'https://bodybuilding.com/', 'Learn More')
+            ]);
+            session.send(card);
             builder.Prompts.choice(session, ' ', [num == 4 ? 'Finish' : 'Next'], BUTTONS);
         });
     };
 }
+
 
 bot.dialog('workout', [
     function(session, args, next) {
