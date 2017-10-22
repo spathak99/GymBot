@@ -196,10 +196,12 @@ bot.dialog('survey', [
 bot.use({
     botbuilder: function(session, next) {
         if (session.userData.setupDone) {
-            session.userData.equipment = JSON.stringify(session.message.value.equipment.split(';'));
+            session.userData.equipment = JSON.stringify((session.message.value || '').equipment.split(';'));
 
             var daysWithoutRestDay = days.slice(0);
             daysWithoutRestDay.splice(days.indexOf(session.userData.restDay), 1);
+            session.userData.scheduleWithRestBlank = scheduleTemplate.slice(0).splice(days.indexOf(session.userData.restDay), 0, []);
+            console.log(session.userData.scheduleWithRestBlank);
 
             //Write that to session.userData.schedule
             session.userData.setup = true;
@@ -208,7 +210,6 @@ bot.use({
                 type: "Column",
                 items: []
             }];
-            //TODO Calculate Correct Rest Day
             daysWithoutRestDay.forEach((dayName) => {
                 columns[0].items.push({
                     type: "TextBlock",
@@ -250,6 +251,9 @@ bot.use({
 });
 
 bot.dialog('workout', [
+    //bodybuilder.getExercises(
+    //    session.userData.sc
+    //)
     //TODO: use bodybuilder.getExercises to get a list of 15 exercised for the given day
     //Muscles is defined by session.userData.schedule for this weekday
     //ExTypes is defined by data entered during setup. You wouldnt powerlift trying to get lean
