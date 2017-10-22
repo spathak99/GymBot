@@ -60,7 +60,7 @@ setInterval(function() {
         // new conversation address, copy without conversationId
         var newConversationAddress = Object.assign({}, address);
         delete newConversationAddress.conversation;
-
+        console.log(JSON.stringify(newConversationAddress));
         // start survey dialog
         //TODO: Don't start this unless setup is false
         if(true){
