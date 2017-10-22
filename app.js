@@ -338,14 +338,15 @@ bot.dialog('workout', [
     genMuscle(3),
     genMuscle(4)
 ]).triggerAction({
-    matches: /calories/i,
+    matches: /ate/i,
     onSelectAction: (session, args, next) => {
-        var arr = session.message.text.split(' ');
         var calsInMessage = 0;
-        for (var i of arr) {
-            var int = parseInt(i);
-            if (!isNaN(int)) {
-                calsInMessage = i;
+
+        var foods = ["pizza","sandwich","burger","cookie","pasta","ice cream","donut","stir fry"];
+        var calories = [285, 340, 354, 132, 150, 137, 195, 264];
+        for(var i = 0; i < foods.length - 1; i++) {
+            if(session.message.text.indexOf(foods[i])!=-1) {
+                calsInMessage = calories[i];
                 break;
             }
         }
