@@ -91,8 +91,8 @@ const scheduleTemplate = [
 ];
 bot.dialog('survey', [
     function(session, results) {
-        builder.Prompts.text(session, 'Hello! What\'s your name?');
-        
+        //builder.Prompts.text(session, 'Hello! What\'s your name?');
+        session.send("TESTING");
     },
 
     function (session, results) {
