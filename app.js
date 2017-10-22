@@ -303,13 +303,18 @@ function genMuscle(num) {
 
             session.send("Your " + num + suffix + " exercise is: " + exercise.name);
             session.send("Here's how to do it:\n" + exercise.description);
+            console.log(exercise.videoUrl);
+            console.log(exercise);
             var card = new builder.VideoCard(session)
-            .title(exercise.name) 
+            .title(exercise.name)
             .subtitle('Visual Explanation')
+            .text()
+            .image(builder.CardImage.create(session, exercise.videoPreview))
             .media([
                 { url: exercise.videoUrl }
-            ])
-            session.send(card);
+            ]);
+
+            session.send(new builder.Message(session).addAttachment(card));
             builder.Prompts.choice(session, ' ', [num == 4 ? 'Finish' : 'Next'], BUTTONS);
         });
     };
@@ -325,7 +330,6 @@ bot.dialog('workout', [
             //TODO: Something
         }
         session.send("Todays workout is for the following muscles: " + todaySchedule.join(', '));
-        session.userData.todaySchedule = todaySchedule;
         next()
     },
     genMuscle(1),
