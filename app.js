@@ -4,12 +4,12 @@ var bodybuilder = require('./libs/bodybuilder');
 
 var firebase = require("firebase");
 // Require inside your project 
-var NutritionixClient = require('nutritionix');
+/*var NutritionixClient = require('nutritionix');
 var nutritionix = new NutritionixClient({
     appId: '5eac3d9d',
     appKey: 'fc867587d084bd23f34c6b7debceec61'
     // debug: true, // defaults to false 
-});
+});*/
 src="https://www.gstatic.com/firebasejs/4.5.0/firebase.js"
 var config = {
     apiKey: "AIzaSyCXqurV20q5-96THLY1Nf0ov3Si5jk63Ak",
@@ -52,6 +52,7 @@ var bot = new builder.UniversalBot(connector, function (session) {
 
     // end current dialog
     session.userData.setupDone = false;
+    session.userData.workedOut = false;
     session.endDialog('Welcome to My Fitness Bot');
 });
 
@@ -303,14 +304,11 @@ function genMuscle(num) {
             session.send("Your " + num + suffix + " exercise is: " + exercise.name);
             session.send("Here's how to do it:\n" + exercise.description);
             var card = new builder.VideoCard(session)
-            .title(exercise.name)
+            .title(exercise.name) 
             .subtitle('Visual Explanation')
             .media([
                 { url: exercise.videoUrl }
             ])
-            .buttons([
-                builder.CardAction.openUrl(session, 'https://bodybuilding.com/', 'Learn More')
-            ]);
             session.send(card);
             builder.Prompts.choice(session, ' ', [num == 4 ? 'Finish' : 'Next'], BUTTONS);
         });
@@ -336,40 +334,9 @@ bot.dialog('workout', [
     genMuscle(4)
 ]);
 
-bot.dialog('Calorie Counter',[
-    function(session, results) {
-        builder.Prompts.text(session, 'What have you eaten today?');
-        session.userData.meal = getResult(results.response);
-        session.send(session.userData.meal);
-    },
-    function getResult(userInput) {
-        var storedSearchItem;
-        $('.resultContainer').html('');
-        $.ajax({
-            type: 'GET',
-            async: false,
-            url: 'https://api.nutritionix.com/v1_1/search/'+userInput+'?'+
-            'fields=item_name%2Citem_id%2Cbrand_name%2Cnf_calories%2Cnf_total_fat&appId=91d21742&appKey=6aac931ef97304cd15f6de495dd94d9a',
-            success: function(d) {
-                storedSearchItem = d.hits;
-            }
-        });
-    
-        storedSearchItem.map(function(item) {
-            var x = item.fields
-            $('.resultContainer').append(
-                '<div class="itemBar">'+
-                    '<h2>' + x.item_name + '<h2>' +
-                    '<h3>Calories: ' + x.nf_calories + '<h3>' +
-                    '<h3>Serving Size: ' + x.nf_serving_size_qty + ' ' + x.nf_serving_size_unit +'<h3>' +
-                    '<h3>Total Fat: ' + x.nf_total_fat + '<h3>' +
-                '</div>'
-                );
-        });
-    }
 
-    
-]);
+  
+
 function StoreUserData(session) {
     writeToDatabase("nonFacebookUsers/" + encodeURIComponent(session.userData.name), session.userData);
 }
