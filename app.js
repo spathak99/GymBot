@@ -336,10 +336,22 @@ bot.dialog('workout', [
     genMuscle(2),
     genMuscle(3),
     genMuscle(4)
-]);
-
-
-  
+]).triggerAction({
+    matches: /calories/i,
+    onSelectAction: (session, args, next) => {
+        var arr = session.message.text.split(' ');
+        var calsInMessage = 0;
+        for (var i of arr) {
+            var int = parseInt(i);
+            if (!isNaN(int)) {
+                calsInMessage = i;
+                break;
+            }
+        }
+        session.userData.calGoal -= calsInMessage;
+        session.send("You have " +  session.userData.calGoal + " calories left for today!");
+    }
+});
 
 function StoreUserData(session) {
     writeToDatabase("nonFacebookUsers/" + encodeURIComponent(session.userData.name), session.userData);
